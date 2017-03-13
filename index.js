@@ -2,7 +2,7 @@
 var util = require('util'),
 Transform = require('stream').Transform;
 
-util.inherits(Alines, Transform);
+util.inherits(Aline, Transform);
 
 function Aline(options) {
     if (!(this instanceof Aline))
