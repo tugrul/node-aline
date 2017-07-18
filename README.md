@@ -2,6 +2,8 @@
 
 Align last bytes to newline boundary of stream chunks
 
+![](https://tugrul.github.io/node-aline/assets/img/node-aline.gif)
+
 ## Install
 
 ```
