@@ -6,17 +6,27 @@ Align last bytes to newline boundary of stream chunks
 
 ## Install
 
+### NPM
+
 ```
 npm install aline
 ```
 
+### Yarn
+
+```
+yarn add aline
+```
+
 ## Sample
 ```javascript
-var request = require('request');
-var Aline = require('aline');
+const Aline = require('aline');
+const {Readable} = require('stream');
 
-var url = 'https://data.cityofnewyork.us/api/views/25th-nujf/rows.csv'
-var stream = request.get(url).pipe(new Aline());
+const stream = Readable.from(async function* () {
+            yield 'foo\nba';
+            yield 'ar\nbaz';
+        }).pipe(new Aline());
 
 stream.on('data', function(chunk) {
     console.log(chunk.toString());
