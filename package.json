@@ -1,13 +1,13 @@
 {
   "name": "aline",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Align stream chunks to bound of lines",
   "main": "index.js",
-  "engines" : {
-    "node" : ">=v5.10.0"
+  "engines": {
+    "node": ">=v6.4.0"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha"
   },
   "repository": {
     "type": "git",
@@ -23,5 +23,8 @@
   "bugs": {
     "url": "https://github.com/tugrul/node-aline/issues"
   },
-  "homepage": "https://github.com/tugrul/node-aline#readme"
+  "homepage": "https://github.com/tugrul/node-aline#readme",
+  "devDependencies": {
+    "mocha": "^7.1.1"
+  }
 }
