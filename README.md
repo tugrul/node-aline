@@ -23,10 +23,12 @@ yarn add aline
 const Aline = require('aline');
 const {Readable} = require('stream');
 
-const stream = Readable.from(async function* () {
-            yield 'foo\nba';
-            yield 'ar\nbaz';
-        }).pipe(new Aline());
+async function* generate() {
+    yield 'foo\nba';
+    yield 'ar\nbaz';
+}
+
+const stream = Readable.from(generate()).pipe(new Aline());
 
 stream.on('data', function(chunk) {
     console.log(chunk.toString());
