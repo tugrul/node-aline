@@ -1,5 +1,5 @@
 
-const Transform = require('stream').Transform;
+const {Transform} = require('stream');
 
 class Aline extends Transform {
     constructor(options) {
@@ -12,13 +12,13 @@ class Aline extends Transform {
     _transform(chunk, encoding, callback) {
         const index = chunk.lastIndexOf(this._separator);
         
-        if (index === chunk.length || index === -1) {
+        if (index === chunk.length - 1 || index === -1) {
             callback(null, Buffer.concat([this._tail, chunk]));
             this._tail = Buffer.alloc(0);
             return;
         }
 
-        const head = Buffer.concat([this._tail, chunk.slice(0, index)]);
+        const head = Buffer.concat([this._tail, chunk.slice(0, index + 1)]);
         this._tail = Buffer.from(chunk.slice(index + 1));
 
         callback(null, head);

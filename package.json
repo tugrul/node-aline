@@ -1,6 +1,6 @@
 {
   "name": "aline",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Align stream chunks to bound of lines",
   "main": "index.js",
   "engines": {

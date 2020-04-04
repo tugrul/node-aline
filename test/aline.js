@@ -20,18 +20,18 @@ function combineData(stream) {
             yield 'foo\nba';
             yield 'ar\nbaz';
         },
-        ['foo', 'baar', 'baz']],
+        ['foo\n', 'baar\n', 'baz']],
     ['should align multiple new lines to chunks',
         async function* () {
             yield 'foo\nbar\nbam\nra';
             yield 'am\nbaz';
         },
-        [ 'foo\nbar\nbam', 'raam', 'baz' ]],
+        [ 'foo\nbar\nbam\n', 'raam\n', 'baz' ]],
     ['should align single chunk',
         async function* () {
             yield 'foo\nbar\nbam\nram';
         },
-        [ 'foo\nbar\nbam', 'ram' ]],
+        [ 'foo\nbar\nbam\n', 'ram' ]],
     ['should return empty array',
         async function* () {
             yield '';
@@ -46,16 +46,16 @@ function combineData(stream) {
         async function* () {
             yield 'foo\n';
         },
-        ['foo']],
+        ['foo\n']],
     ['should align new line on first char',
         async function* () {
             yield '\nfoo';
         },
-        ['foo']],
+        ['\n', 'foo']],
     ['should align new line on first and last char',
         async function* () {
             yield '\nfoo\n';
         },
-        ['\nfoo']]
+        ['\nfoo\n']]
 ].forEach(([name, generate, target]) => it(name, async() => assert.deepStrictEqual(target, await combineData(Readable.from(generate()).pipe(new Aline())))));
 
