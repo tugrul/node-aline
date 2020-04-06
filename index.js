@@ -11,8 +11,14 @@ class Aline extends Transform {
     
     _transform(chunk, encoding, callback) {
         const index = chunk.lastIndexOf(this._separator);
-        
-        if (index === chunk.length - 1 || index === -1) {
+
+        if (index === -1) {
+            this._tail = Buffer.concat([this._tail, chunk]);
+            callback(null, Buffer.alloc(0));
+            return;
+        }
+
+        if (index === chunk.length - 1) {
             callback(null, Buffer.concat([this._tail, chunk]));
             this._tail = Buffer.alloc(0);
             return;
