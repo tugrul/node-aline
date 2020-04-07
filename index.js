@@ -14,7 +14,7 @@ class Aline extends Transform {
 
         if (index === -1) {
             this._tail = Buffer.concat([this._tail, chunk]);
-            callback(null, Buffer.alloc(0));
+            callback();
             return;
         }
 
