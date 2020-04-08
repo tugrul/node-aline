@@ -20,11 +20,13 @@
   ],
   "author": "Tugrul Topuz <tugrultopuz@gmail.com>",
   "license": "MIT",
+  "typings": "./index.d.ts",
   "bugs": {
     "url": "https://github.com/tugrul/node-aline/issues"
   },
   "homepage": "https://github.com/tugrul/node-aline#readme",
   "devDependencies": {
-    "mocha": "^7.1.1"
+    "mocha": "^7.1.1",
+    "@types/node": "^13.11.0"
   }
 }
