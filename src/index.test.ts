@@ -1,12 +1,13 @@
 
-const assert = require('assert');
-const {Readable} = require('stream');
-const Aline = require('../index.js');
+import { Readable, Transform } from 'stream';
 
-function combineData(stream) {
+import Aline from '.'
+
+
+function combineData<T extends Transform>(stream: T) {
     return new Promise((resolve, reject) => {
 
-        const chunks = [];
+        const chunks: Array<string> = [];
 
         stream.on('data', data => chunks.push(data.toString()));
         stream.on('end', () => resolve(chunks));
@@ -14,7 +15,9 @@ function combineData(stream) {
     });
 }
 
-[
+type FixtureItem = [string, () => AsyncGenerator<string, void, unknown>, Array<string>];
+
+const fixture: Array<FixtureItem> = [
     ['should align single new lines to chunks', 
         async function* () {
             yield 'foo\nba';
@@ -57,5 +60,7 @@ function combineData(stream) {
             yield '\nfoo\n';
         },
         ['\nfoo\n']]
-].forEach(([name, generate, target]) => it(name, async() => assert.deepStrictEqual(target, await combineData(Readable.from(generate()).pipe(new Aline())))));
+];
+
+fixture.forEach(([name, generate, target]) => test(name, async() => expect(await combineData(Readable.from(generate()).pipe(new Aline()))).toEqual(target)));
 

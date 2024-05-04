@@ -1,15 +1,23 @@
 
-const {Transform} = require('stream');
 
-class Aline extends Transform {
-    constructor(options) {
+import { Transform } from 'stream';
+import type { TransformCallback, TransformOptions } from 'stream';
+
+type AlineOptions = TransformOptions & {separator: string};
+
+export default class Aline extends Transform {
+
+    _tail: Buffer;
+    _separator: string;
+
+    constructor(options?: AlineOptions) {
         super();
 
         this._tail = Buffer.alloc(0);
         this._separator = (options && options.separator) || '\n';
     }
     
-    _transform(chunk, encoding, callback) {
+    _transform(chunk: Buffer, encoding: BufferEncoding, callback: TransformCallback) {
         const index = chunk.lastIndexOf(this._separator);
 
         if (index === -1) {
@@ -31,10 +39,7 @@ class Aline extends Transform {
         callback(null, head);
     }
     
-    _flush(callback) {
+    _flush(callback: TransformCallback) {
         callback(null, this._tail);
     }
 }
-
-
-module.exports = Aline;
