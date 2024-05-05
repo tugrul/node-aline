@@ -1,11 +1,11 @@
 {
   "name": "aline",
-  "version": "0.0.9",
+  "version": "1.0.0",
   "description": "Align stream chunks to bound of lines",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "engines": {
-    "node": ">=v6.4.0"
+    "node": ">=v20.0.0"
   },
   "scripts": {
     "test": "jest",
