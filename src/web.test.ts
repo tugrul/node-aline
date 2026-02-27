@@ -1,30 +1,37 @@
 
-import { Readable } from 'node:stream';
-
-import { Aline } from './index.js';
+import { Aline } from './web.js';
 
 // ---------------------------------------------------------------------------
-// Helper — collect all 'data' events from a Transform into string[]
+// Helper — pipe an async string iterable through AlineWeb, return strings
 // ---------------------------------------------------------------------------
 
-function collect(stream: Aline): Promise<string[]> {
-    return new Promise((resolve, reject) => {
-        const chunks: string[] = [];
-        stream.on('data', (chunk: Buffer) => chunks.push(chunk.toString()));
-        stream.on('end', () => resolve(chunks));
-        stream.on('error', reject);
-    });
-}
-
-/** Pipe an async string iterable through an Aline instance. */
 async function pipe(
     iterable: AsyncIterable<string>,
     options?: ConstructorParameters<typeof Aline>[0],
 ): Promise<string[]> {
-    const aline = new Aline(options);
-    const result = collect(aline);
-    Readable.from(iterable).pipe(aline);
-    return result;
+    const readable = new ReadableStream<string>({
+        async start(controller) {
+            for await (const chunk of iterable) {
+                controller.enqueue(chunk);
+            }
+            controller.close();
+        },
+    });
+
+    const chunks: string[] = [];
+    const reader = readable
+        .pipeThrough(new TextEncoderStream())
+        .pipeThrough(new Aline(options))
+        .pipeThrough(new TextDecoderStream())
+        .getReader();
+
+    while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        chunks.push(value);
+    }
+    reader.releaseLock();
+    return chunks;
 }
 
 async function* gen(...items: string[]): AsyncGenerator<string> {
@@ -35,7 +42,7 @@ async function* gen(...items: string[]): AsyncGenerator<string> {
 // Boundary mode
 // ---------------------------------------------------------------------------
 
-describe('Aline/node (boundary mode)', () => {
+describe('Aline/web (boundary mode)', () => {
     test('aligns split across two chunks', async () => {
         expect(await pipe(gen('foo\nba', 'ar\nbaz')))
             .toEqual(['foo\n', 'baar\n', 'baz']);
@@ -90,7 +97,7 @@ describe('Aline/node (boundary mode)', () => {
 // Readline mode
 // ---------------------------------------------------------------------------
 
-describe('Aline/node (readline mode)', () => {
+describe('Aline/web (readline mode)', () => {
     test('emits each line separately', async () => {
         expect(await pipe(gen('foo\nbar\nbaz'), { readline: true }))
             .toEqual(['foo\n', 'bar\n', 'baz']);
@@ -132,15 +139,42 @@ describe('Aline/node (readline mode)', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Node-specific: TransformOptions passthrough
+// Web-specific: is a real TransformStream
 // ---------------------------------------------------------------------------
 
-describe('Aline/node (stream options passthrough)', () => {
-    test('objectMode option is forwarded to Transform', () => {
-        expect(() => new Aline({ objectMode: false })).not.toThrow();
+describe('Aline/web (web streams compliance)', () => {
+    test('is an instance of TransformStream', () => {
+        expect(new Aline()).toBeInstanceOf(TransformStream);
     });
 
-    test('highWaterMark option is forwarded to Transform', () => {
-        expect(() => new Aline({ highWaterMark: 64 * 1024 })).not.toThrow();
+    test('exposes readable and writable properties', () => {
+        const aline = new Aline();
+        expect(aline.readable).toBeInstanceOf(ReadableStream);
+        expect(aline.writable).toBeInstanceOf(WritableStream);
+    });
+
+    test('can be used directly with pipeThrough without wrapping', async () => {
+        // Ensure Aline itself (not new TransformStream(new Aline())) works
+        const enc = new TextEncoder();
+        const dec = new TextDecoder();
+
+        const readable = new ReadableStream<Uint8Array>({
+            start(controller) {
+                controller.enqueue(enc.encode('hello\nworld'));
+                controller.close();
+            },
+        });
+
+        const chunks: string[] = [];
+        const reader = readable.pipeThrough(new Aline({ readline: true })).getReader();
+
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            chunks.push(dec.decode(value));
+        }
+        reader.releaseLock();
+
+        expect(chunks).toEqual(['hello\n', 'world']);
     });
 });
