@@ -1,6 +1,6 @@
 {
   "name": "aline",
-  "version": "2.0.0",
+  "version": "2.0.2",
   "description": "Line-boundary-aligning stream transform for Node.js and the Web Streams API",
   "type": "module",
   "main": "./dist/index.js",
@@ -13,6 +13,10 @@
     "./web": {
       "import": "./dist/web.js",
       "types": "./dist/web.d.ts"
+    },
+    "./core": {
+      "import": "./dist/core.js",
+      "types": "./dist/core.d.ts"
     }
   },
   "engines": {
