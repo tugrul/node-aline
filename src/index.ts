@@ -41,6 +41,7 @@ export class Aline extends Transform {
     private _tail: Buffer;
     private _separator: Buffer;
     private _readline: boolean;
+    private _tailEncoding: BufferEncoding | undefined;
 
     constructor(options?: TransformOptions & AlineOptions) {
         // Strip our custom keys before passing the rest to Transform
@@ -52,12 +53,13 @@ export class Aline extends Transform {
         this._tail = Buffer.alloc(0);
     }
 
-    _transform(chunk: Buffer, _encoding: BufferEncoding, callback: TransformCallback): void {
+    _transform(chunk: Buffer, encoding: BufferEncoding, callback: TransformCallback): void {
         const data = concat(this._tail, chunk) as Buffer;
         const index = lastIndexOf(data, this._separator);
 
         if (index === -1) {
             this._tail = data;
+            this._tailEncoding = encoding;
             callback();
             return;
         }
@@ -68,10 +70,10 @@ export class Aline extends Transform {
 
         if (this._readline) {
             for (const line of splitLines(head, this._separator)) {
-                this.push(line);
+                this.push(line, encoding);
             }
         } else {
-            this.push(head);
+            this.push(head, encoding);
         }
 
         callback();
@@ -79,7 +81,7 @@ export class Aline extends Transform {
 
     _flush(callback: TransformCallback): void {
         if (this._tail.length > 0) {
-            this.push(this._tail);
+            this.push(this._tail, this._tailEncoding);
             this._tail = Buffer.alloc(0);
         }
         callback();
